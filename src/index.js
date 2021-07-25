@@ -7,7 +7,7 @@ img.src = 'https://img.favpng.com/11/12/22/chess-piece-pin-knight-clip-art-png-f
 
 
 
-
+//function to display the light square
 function Square(props) {
 	return (
 	<button className="squarel" onClick={props.onClick}>
@@ -16,6 +16,7 @@ function Square(props) {
 	</button>
 	);
 }
+//function to display the dark square
 function Squared(props) {
 	return (
 	<button className="squared" background ="#fff"onClick={props.onClick}>
@@ -26,7 +27,7 @@ function Squared(props) {
 }
 
 
-
+// checks to see if compareValue is a different color to pieceColor
 function isOppositeColor(compareValue,pieceColor){
 	if(compareValue === 0){
 		return false;
@@ -40,6 +41,11 @@ function isOppositeColor(compareValue,pieceColor){
 	}
 }
 
+/*
+	CheckLine(int, int, int, int, bool, int[][])
+	Recursively collects a list of possible moves in a line directed by xChange and yChange
+	returns a set of possible moves in a streight line
+*/
 function CheckLine(x,y,xChange,yChange,color,squares){
 	x += xChange;
 	y += yChange;
@@ -55,9 +61,35 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	return null;
 }
 
-function checkForCheck(squares,){
-
+function checkForCheck(squares){
+	var moveArray;
+	var color;
+	for(var i in squares){
+		if(squares[i] >= 1){
+			//calculates the color of i
+			if(squares[i] >= 10){
+				color = false;
+			}else{
+				color = true;
+			}
+			//gets the possible moves for i
+			moveArray = CalculateMoves(i,squares[i],squares);
+			for(var m in moveArray){
+				//checks to see if a king is in the list
+				if((squares[m] === 6 || squares[m] === 16) && isOppositeColor(squares[m],color)){
+					if(color);
+				}
+			}
+		}
+	}
 }
+
+/*
+	CalculateMoves(int, int, int[][])
+	i is the location on the squares grid
+	value is the value of i
+	squares is the board 
+*/
 
 function CalculateMoves(i,value,squares){
 
