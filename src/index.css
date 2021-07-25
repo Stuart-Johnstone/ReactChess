@@ -1,0 +1,78 @@
+body{
+    font: 14px "Century Gothic", Futura,sanssherif;
+    margin: 20px;
+}
+
+ol,ul{
+    padding-left: 30px;
+}
+
+.board-row:after{
+    clear: both;
+    content: "";
+    display: table;
+}
+
+.status{
+    margin-bottom: 10px;
+    font-size: 40px;
+    font-family: "Trebuchet MS";
+}
+.instruction{
+    margin-bottom: 10px;
+    font-size: 40px;
+    font-family: "Trebuchet MS";
+}
+
+.squarel{
+    background: rgb(177, 227, 247);
+    border: 0px solid rgb(0, 0, 0);
+    float: left;
+    font-size:24px;
+    font-weight: bold;
+    line-height: 34px;
+    height: 64px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding: 0;
+    text-align: center;
+    width: 64px
+}
+
+.squared{
+    background: rgb(5, 114, 187);
+    border: 0px solid rgb(0, 0, 0);
+    float: left;
+    font-size:24px;
+    font-weight: bold;
+    line-height: 34px;
+    height: 64px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding: 0;
+    text-align: center;
+    width: 64px
+}
+.square:focus{
+    outline:none
+}
+
+.kbd-navigation .square:focus{
+    background: #ddd;
+}
+
+.game {
+    display: flex;
+    flex-direction: row;
+}
+
+.game-info {
+    margin-left: 20px;
+}
+
+.pieceimg{
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+}
+
