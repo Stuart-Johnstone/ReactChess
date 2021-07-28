@@ -6,6 +6,22 @@ let img = new Image();
 img.src = 'https://img.favpng.com/11/12/22/chess-piece-pin-knight-clip-art-png-favpng-saLesWdcsg2rCsJeeEeyGJqcQ.jpg';
 
 
+/*
+	This function removes dublicates from an array
+	Thank you to LiraNuna on stackoverflow for this code block
+	https://stackoverflow.com/a/1584377
+*/
+function arrayUnique(array) {
+    var a = array.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+}
 
 //function to display the light square
 function Square(props) {
@@ -52,12 +68,31 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	var cord = x + y*8;
 	if(x >= 0 && x <=7){
 		if(y >= 0 && y <=7){
-			if(!isOppositeColor(squares[cord],!color)){
+			if(squares[cord] === 0){
+				if(CheckLine(x,y,xChange,yChange,color,squares) === null){
+					return [cord]
+				}
 				return [cord].concat(CheckLine(x,y,xChange,yChange,color,squares))
+			}else{
+				if(isOppositeColor(squares[cord],color)){
+					return [cord]
+				}
 			}
 		}
 	}
-	return null;
+	return -1;
+}
+
+function CalculateCheck(squares, attacks, color){
+	for(var i in attacks){
+		
+		if(squares[attacks[i]] === 6 && color){			// if the selected color is white and the white king is attacked
+			return true; 
+		}else if(squares[attacks[i]] === 16 && !color){ // if the selected color is black and the black king is attacked
+			return true;
+		}	
+	}
+	return false;
 }
 
 function CalculatePawnMoves(x,y,color,i,value,squares){
@@ -108,8 +143,7 @@ function CalculatePawnAttacks(x,y,value){
 		if(x+1 <= 7 && y+1 <= 7){
 			moveArray.push((x+1)+(y-1)*8);
 		}
-	}
-	else{
+	}else{
 		if(x-1 >= 0 && y-1 >= 0){
 			moveArray.push((x-1)+(y+1)*8);
 		}
@@ -119,7 +153,6 @@ function CalculatePawnAttacks(x,y,value){
 	}
 	return moveArray;
 }
-
 function CalculateKnightMoves(x,y,color,squares){
 	var pX;
 	var pY;
@@ -154,6 +187,40 @@ function CalculateKnightMoves(x,y,color,squares){
 	}
 	return moveArray;
 }
+function CalculateKnightAttacks(x,y,color,squares){
+	var pX;
+	var pY;
+
+	var moveArray = [];
+
+	//temp variables
+	var pHigh;
+	var pLow;
+	//possible combinations that will allow the special knight movement
+	var PossibleX = [-2,-1,1,2];
+	var PossibleY = [1,2,2,1];
+
+	for(var index in PossibleX){
+		pX = PossibleX[index];
+		pY = PossibleY[index];
+		pHigh = x+pX + (y+pY)*8;
+		pLow = x+pX + (y-pY)*8;
+
+		//checks to see if the x cordinate is in bounds
+		if(x+pX <= 7 && x + pX >= 0){
+
+			//checks to see if the knight could move to a square above
+			if(y + pY <= 7 ){
+				moveArray.push(pHigh);
+			}
+			//checks to see if the knight could move to a square below
+			if(y - pY >= 0 ){
+				moveArray.push(pLow);
+			}
+		}
+	}
+	return moveArray;
+}
 function CalculateBishopMoves(x,y,color,squares){
 	var moveArray = [];
 
@@ -163,6 +230,22 @@ function CalculateBishopMoves(x,y,color,squares){
 	moveArray = moveArray.concat(CheckLine(x,y,-1,-1,color,squares));
 
 	return moveArray;
+}
+function CalculateBishopAttacks(x,y,color,squares){
+	var moveArray = [];
+
+	moveArray = moveArray.concat(CheckLine(x,y,1,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,1,-1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,-1,color,squares));
+
+	// Acts like opposite color to show that it defends pieces of the same color
+	moveArray = moveArray.concat(CheckLine(x,y,1,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,1,-1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,-1,!color,squares));
+
+	return arrayUnique(moveArray);
 }
 function CalculateRookMoves(x,y,color,squares){
 	var moveArray = [];
@@ -174,6 +257,23 @@ function CalculateRookMoves(x,y,color,squares){
 	moveArray = moveArray.concat(CheckLine(x,y,0,-1,color,squares));
 
 	return moveArray;
+}
+function CalculateRookAttacks(x,y,color,squares){
+	var moveArray = [];
+
+	// vertical/horizontal movement (acts like normal)
+	moveArray = moveArray.concat(CheckLine(x,y,1,0,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,0,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,-1,color,squares));
+
+	// Acts like opposite color to show that it defends pieces of the same color
+	moveArray = moveArray.concat(CheckLine(x,y,1,0,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,0,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,-1,!color,squares));
+
+	return arrayUnique(moveArray);
 }
 function CalculateQueenMoves(x,y,color,squares){
 	var moveArray = [];
@@ -191,6 +291,34 @@ function CalculateQueenMoves(x,y,color,squares){
 
 	return moveArray;
 }
+function CalculateQueenAttacks(x,y,color,squares){
+	var moveArray = [];
+
+	// diagonal movement
+	moveArray = moveArray.concat(CheckLine(x,y,1,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,1,-1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,-1,color,squares));
+	// vertical/horizontal movement
+	moveArray = moveArray.concat(CheckLine(x,y,1,0,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,0,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,1,color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,-1,color,squares));
+
+
+	// Acts like opposite color to show that it defends pieces of the same color
+	// diagonal movement
+	moveArray = moveArray.concat(CheckLine(x,y,1,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,1,-1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,-1,!color,squares));
+	// vertical/horizontal movement
+	moveArray = moveArray.concat(CheckLine(x,y,1,0,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,-1,0,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,1,!color,squares));
+	moveArray = moveArray.concat(CheckLine(x,y,0,-1,!color,squares));
+	return arrayUnique(moveArray);
+}
 function CalculateKingAttacks(x,y){
 	var pX;
 	var pY;
@@ -199,14 +327,13 @@ function CalculateKingAttacks(x,y){
 		for(var tempY in [-1,0,1]){
 			pX = [-1,0,1][tempX];
 			pY = [-1,0,1][tempY];
-			if( (x+pX + ((y+pY)*8) <= 7 && x+pX + ((y+pY)*8) >= 0) && (x+pX + ((y+pY)*8) <= 7 && x+pX + ((y+pY)*8) >= 0) ){
+			if( (x+pX <= 7 && x+pX >= 0) && (y+pY <= 7 && y+pY >= 0)){
 				moveArray.push(x+pX + ((y+pY)*8));
 			}
 		}
 	}
 	return moveArray;
 }
-
 function CalculateKingMoves(x,y,color,squares){
 	var pX;
 	var pY;
@@ -217,7 +344,7 @@ function CalculateKingMoves(x,y,color,squares){
 	var tempI;
 
 	var validMove;
-	var allOpponentMoves = CalculateAllMovesForOppositeColor(squares,color);
+	var allOpponentMoves = CalculateAllAttacksForOppositeColor(squares,color);
 
 	for(var tempX in [-1,0,1]){
 		for(var tempY in [-1,0,1]){
@@ -253,9 +380,76 @@ function CalculateKingMoves(x,y,color,squares){
 	console.log(moveArray);
 	return moveArray;
 }
+/*
+	CalculateAllAttacksForOppositeColor (int[], bool)
+	returns all of the attacked squares on the board from the opposing color
+*/
+function CalculateAllAttacksForOppositeColor(squares,CheckColor){
+	//calculate board position of the piece
+	var x;
+	var y;
+
+	var allAttacks = [];
+	var color;
+	var value;
+
+	for(var i in squares){
+		x = i%8;
+		y = (i-x)/8;
+
+		value = squares[i];
+		color = true; 	// initially assumes that the piece is white
+		if(value >= 10){	// the piece color is white
+			color = false;
+		}
+
+		if(CheckColor){
+					
+			if(value === 11){ // pawn
+				allAttacks = allAttacks.concat(CalculatePawnAttacks(x,y,value));
+			}
+			else if(value === 12){ // knight
+				allAttacks = allAttacks.concat(CalculateKnightAttacks(x,y,color,i,value,squares));
+			}
+			else if(value === 13){ // bishop
+				allAttacks = allAttacks.concat(CalculateBishopAttacks(x,y,color,squares));
+			}
+			else if(value === 14){ // rook
+				allAttacks = allAttacks.concat(CalculateRookAttacks(x,y,color,squares));
+			}
+			else if(value === 15){ // queen
+				allAttacks = allAttacks.concat(CalculateQueenAttacks(x,y,color,squares));
+			}
+			else if(value === 16){
+				allAttacks = allAttacks.concat(CalculateKingAttacks(x,y));
+			}
+		}else{
+			if(value === 1){ // pawn
+				allAttacks = allAttacks.concat(CalculatePawnAttacks(x,y,value));
+			}
+			else if(value === 2){ // knight
+				allAttacks = allAttacks.concat(CalculateKnightAttacks(x,y,color,i,value,squares));
+			}
+			else if(value === 3){ // bishop
+				allAttacks = allAttacks.concat(CalculateBishopAttacks(x,y,color,squares));
+			}
+			else if(value === 4){ // rook
+				allAttacks = allAttacks.concat(CalculateRookAttacks(x,y,color,squares));
+			}
+			else if(value === 5){ // queen
+				allAttacks = allAttacks.concat(CalculateQueenAttacks(x,y,color,squares));
+			}
+			else if(value === 6){
+				allAttacks = allAttacks.concat(CalculateKingAttacks(x,y));
+			}
+		}
+	}
+	//array unique here removes the excess null values and cleans up the output for easier debug
+	return arrayUnique(allAttacks).sort();
+}
 
 /*
-	CalculateMoves(int, int, int[][])
+	CalculateMoves(int, int, int[])
 	i is the location on the squares grid
 	value is the value of i
 	squares is the board 
@@ -301,72 +495,32 @@ function CalculateMoves(i,value,squares){
 	else if(value === 6 || value === 16){
 		moveArray = CalculateKingMoves(x,y,color,squares);
 	}
-	return moveArray;
-} 
 
+	moveArray = arrayUnique(moveArray);
 
-function CalculateAllMovesForOppositeColor(squares,CheckColor){
-	//calculate board position of the piece
-	var x;
-	var y;
+	//checks to see if each move wont put the player in check
+	var move;
+	var squaresCopy;
+	var moveArrayValidated = [];
+	console.log("before",moveArray);
 
-	var allMoves = [];
-	var color;
-	var value;
-
-	for(var i in squares){
-		x = i%8;
-		y = (i-x)/8;
-
-		value = squares[i];
-		color = true; 	// initially assumes that the piece is white
-		if(value >= 10){	// the piece color is white
-			color = false;
+	for(var m in moveArray){						// loops through the moveArray
+		move = moveArray[m];						// gets a copy of the move
+		squaresCopy = squares.slice();				// creates a copy of squares
+		squaresCopy[move] = value;					// makes the move 
+		squaresCopy[i] = 0;
+		console.log(m, moveArrayValidated, squaresCopy[move], CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color));
+		// tests to see if the move is made, that it doesn't put the player in check
+		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color)){
+			moveArrayValidated.push(move);			// if the move would put the player in check 
+													// then remove it from the list
 		}
 
-		if(CheckColor){
-					
-			if(value === 11){ // pawn
-				allMoves = allMoves.concat(CalculatePawnAttacks(x,y,value));
-			}
-			else if(value === 12){ // knight
-				allMoves = allMoves.concat(CalculateKnightMoves(x,y,color,i,value,squares));
-			}
-			else if(value === 13){ // bishop
-				allMoves = allMoves.concat(CalculateBishopMoves(x,y,color,squares));
-			}
-			else if(value=== 14){ // rook
-				allMoves = allMoves.concat(CalculateRookMoves(x,y,color,squares));
-			}
-			else if(value === 15){ // queen
-				allMoves = allMoves.concat(CalculateQueenMoves(x,y,color,squares));
-			}
-			else if(value === 16){
-				allMoves = allMoves.concat(CalculateKingAttacks(x,y));
-			}
-		}else{
-			if(value === 1){ // pawn
-				allMoves = allMoves.concat(CalculatePawnAttacks(x,y,value));
-			}
-			else if(value === 2){ // knight
-				allMoves = allMoves.concat(CalculateKnightMoves(x,y,color,i,value,squares));
-			}
-			else if(value === 3){ // bishop
-				allMoves = allMoves.concat(CalculateBishopMoves(x,y,color,squares));
-			}
-			else if(value=== 4){ // rook
-				allMoves = allMoves.concat(CalculateRookMoves(x,y,color,squares));
-			}
-			else if(value === 5){ // queen
-				allMoves = allMoves.concat(CalculateQueenMoves(x,y,color,squares));
-			}
-			else if(value === 6){
-				allMoves = allMoves.concat(CalculateKingAttacks(x,y));
-			}
-		}
 	}
-	return allMoves;
-}
+	console.log("after",moveArrayValidated);
+
+	return moveArrayValidated;
+} 
 
 //The main board class
 class Board extends React.Component {
