@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-let img = new Image();
-img.src = 'https://img.favpng.com/11/12/22/chess-piece-pin-knight-clip-art-png-favpng-saLesWdcsg2rCsJeeEeyGJqcQ.jpg';
-
 
 /*
 	This function removes dublicates from an array
@@ -22,7 +19,6 @@ function arrayUnique(array) {
 
     return a;
 }
-
 //function to display the light square
 function Square(props) {
 	return (
@@ -66,13 +62,18 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	x += xChange;
 	y += yChange;
 	var cord = x + y*8;
+	// check bounds of the x and y cordinate
 	if(x >= 0 && x <=7){
 		if(y >= 0 && y <=7){
+			
+			// if the value of the square is zero recursively call checkline
 			if(squares[cord] === 0){
 				if(CheckLine(x,y,xChange,yChange,color,squares) === null){
 					return [cord]
 				}
 				return [cord].concat(CheckLine(x,y,xChange,yChange,color,squares))
+
+			// chech to see if the last square is the opposite color
 			}else{
 				if(isOppositeColor(squares[cord],color)){
 					return [cord]
@@ -83,9 +84,13 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	return -1;
 }
 
+
+/*
+	CalculateCheck: int[], int[], bool
+	loop through attacks and see if the attack causes a check
+*/
 function CalculateCheck(squares, attacks, color){
 	for(var i in attacks){
-		
 		if(squares[attacks[i]] === 6 && color){			// if the selected color is white and the white king is attacked
 			return true; 
 		}else if(squares[attacks[i]] === 16 && !color){ // if the selected color is black and the black king is attacked
@@ -380,6 +385,7 @@ function CalculateKingMoves(x,y,color,squares){
 	console.log(moveArray);
 	return moveArray;
 }
+
 /*
 	CalculateAllAttacksForOppositeColor (int[], bool)
 	returns all of the attacked squares on the board from the opposing color
@@ -454,7 +460,6 @@ function CalculateAllAttacksForOppositeColor(squares,CheckColor){
 	value is the value of i
 	squares is the board 
 */
-
 function CalculateMoves(i,value,squares){
 
 	//calculate board position of the piece
@@ -502,14 +507,11 @@ function CalculateMoves(i,value,squares){
 	var move;
 	var squaresCopy;
 	var moveArrayValidated = [];
-	console.log("before",moveArray);
-
 	for(var m in moveArray){						// loops through the moveArray
 		move = moveArray[m];						// gets a copy of the move
 		squaresCopy = squares.slice();				// creates a copy of squares
 		squaresCopy[move] = value;					// makes the move 
 		squaresCopy[i] = 0;
-		console.log(m, moveArrayValidated, squaresCopy[move], CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color));
 		// tests to see if the move is made, that it doesn't put the player in check
 		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color)){
 			moveArrayValidated.push(move);			// if the move would put the player in check 
@@ -517,8 +519,6 @@ function CalculateMoves(i,value,squares){
 		}
 
 	}
-	console.log("after",moveArrayValidated);
-
 	return moveArrayValidated;
 } 
 
@@ -534,12 +534,19 @@ class Board extends React.Component {
 			//initial game vars
 			WhiteTurn: true,
 			CordClick: true,
-			clickPiece: null
+			clickPiece: null,
+			checkMate: false
+
 		};
 	}
 
 	//Main Handler for clicks
 	handleClick(i) {
+
+		if(this.state.checkMate){
+			return;
+		}
+
 		const squares = this.state.squares.slice();
 		if(this.state.CordClick){
 			if (squares[i] === 0) return;
@@ -555,11 +562,29 @@ class Board extends React.Component {
 				}
 			}
 		}
+		
+		
+		var color = true;
+		var value = squares[i];
+		if(value > 10){
+			color = false;
+		}
+
+		var checkmate = true;
+		for(var s in squares){
+			if(isOppositeColor(squares[s],color)){
+				if((CalculateMoves(s,squares[s],squares).length !== 0)){
+					checkmate = false;
+					console.log("no mate",(CalculateMoves(s,squares[s],squares).length !== 0), CalculateMoves(s,squares[s],squares).length);
+				}
+			}
+		}
 
 		this.setState({
 			squares: squares,
 			WhiteTurn: !this.state.WhiteTurn,
 			CordClick: !this.state.CordClick,
+			checkMate: checkmate,
 
 		});
 	}
@@ -629,7 +654,9 @@ class Board extends React.Component {
 	render() {
 		//Status strings that are displayed above the board
 		let status = 'To Move: ' + (this.state.WhiteTurn ? 'White' : 'Black');
-		let instruction = 'Instruction: ' + (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
+		var instruction = 'Instruction: ' + (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
+		if(this.state.checkMate) instruction = "Check Mate";
+		
 		//renderSquare(i) renders a light square
 		//renderSquared(i) renders a dard square
 		return (
