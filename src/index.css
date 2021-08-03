@@ -23,6 +23,12 @@ ol,ul{
     font-size: 40px;
     font-family: "Trebuchet MS";
 }
+.reset{
+    margin-bottom: 10px;
+    font-size: 40px;
+    font-family: "Trebuchet MS";
+    background-color: coral;
+}
 
 .squarel{
     background: rgb(177, 227, 247);
