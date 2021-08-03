@@ -22,22 +22,12 @@ function arrayUnique(array) {
 //function to display the light square
 function Square(props) {
 	return (
-	<button className="squarel" onClick={props.onClick}>
+	<button className= {props.className} onClick={props.onClick}>
 		{props.index}
 		{props.value}
 	</button>
 	);
 }
-//function to display the dark square
-function Squared(props) {
-	return (
-	<button className="squared" background ="#fff"onClick={props.onClick}>
-		{props.index}
-		{props.value}
-	</button>
-	);
-}
-
 
 // checks to see if compareValue is a different color to pieceColor
 function isOppositeColor(compareValue,pieceColor){
@@ -542,51 +532,87 @@ class Board extends React.Component {
 
 	//Main Handler for clicks
 	handleClick(i) {
+		const squares = this.state.squares.slice();
 
-		if(this.state.checkMate){
+		// calculates which turn it is supposed to be 
+		// then verifies that the clicked piece can be moved
+		var color = true;
+		var value = squares[i];
+		if(value === 0){
+			value = squares[this.state.clickPiece]
+		}
+		if(value > 10){
+			color = false;
+		}
+
+
+		// if a king is check mated or the color doesn't match eith 
+		// the turn
+		if(this.state.checkMate || color !== this.state.WhiteTurn){
 			return;
 		}
 
-		const squares = this.state.squares.slice();
+
 		if(this.state.CordClick){
 			if (squares[i] === 0) return;
 			this.moveArray = CalculateMoves(i,squares[i],squares);
 			this.setState({clickPiece: i});
+
 		}else{
 			console.log(i);
+			value = squares[this.state.clickPiece];
 			for(const l in this.moveArray){
 				if(i === this.moveArray[l]){
-					console.log("moved");
-					squares[i] = squares[this.state.clickPiece];
+					//auto queen handling, checks to see if a pawn has gotten to the back rank
+					if((value === 1 || value === 11) && (i-8 < 0 || i + 8 > 63 )){
+						squares[i] = squares[this.state.clickPiece] + 4;
+					}else{
+						squares[i] = squares[this.state.clickPiece];
+					}
+					//resets click piece
 					squares[this.state.clickPiece] = 0;
+					
+					this.setState({	
+						WhiteTurn: !this.state.WhiteTurn
+					})
 				}
 			}
 		}
 		
-		
-		var color = true;
-		var value = squares[i];
-		if(value > 10){
-			color = false;
-		}
 
 		var checkmate = true;
 		for(var s in squares){
 			if(isOppositeColor(squares[s],color)){
 				if((CalculateMoves(s,squares[s],squares).length !== 0)){
 					checkmate = false;
-					console.log("no mate",(CalculateMoves(s,squares[s],squares).length !== 0), CalculateMoves(s,squares[s],squares).length);
 				}
 			}
 		}
 
 		this.setState({
 			squares: squares,
-			WhiteTurn: !this.state.WhiteTurn,
 			CordClick: !this.state.CordClick,
 			checkMate: checkmate,
 
 		});
+	}
+
+	//resets the board to default
+	reseetBoard(){
+		this.moveArray = [];
+		this.setState ({
+			//Initial state of the board
+			squares: [14,12,13,15,16,13,12,14,11,11,11,11,11,11,11,11].concat(Array(32).fill(0).concat([1,1,1,1,1,1,1,1,4,2,3,5,6,3,2,4])),
+			//initial game vars
+			WhiteTurn: true,
+			CordClick: true,
+			clickPiece: null,
+			checkMate: false
+
+		});
+		//cycles two clicks to force the board to update
+		this.handleClick(null);
+		this.handleClick(null);
 	}
 
 	renderPiece(i){
@@ -632,6 +658,7 @@ class Board extends React.Component {
 	renderSquare(i) {
 		return (
 			<Square
+			className = "squarel"
 			value={this.renderPiece(i)}
 			index={i} 
 			onClick={() => this.handleClick(i)}
@@ -640,7 +667,8 @@ class Board extends React.Component {
 	}
 	renderSquared(i){
 		return (
-			<Squared
+			<Square
+			className = "squared"
 			value={this.renderPiece(i)}
 			index={i} 
 			onClick={() => this.handleClick(i)}
@@ -648,9 +676,6 @@ class Board extends React.Component {
 		);
 
 	}
-
-
-
 	render() {
 		//Status strings that are displayed above the board
 		let status = 'To Move: ' + (this.state.WhiteTurn ? 'White' : 'Black');
@@ -743,6 +768,7 @@ class Board extends React.Component {
 					{this.renderSquared(6+56)}
 					{this.renderSquare(7+56)}
 				</div>
+				<div className="reset" onClick = {() => this.reseetBoard()}> {"Reset Board"} </div>
 			</div>
 		);
 	}
