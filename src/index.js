@@ -2,8 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-let img = new Image();
-img.src = 'https://img.favpng.com/11/12/22/chess-piece-pin-knight-clip-art-png-favpng-saLesWdcsg2rCsJeeEeyGJqcQ.jpg';
+import wPawn from './pieces/wPawn.png';
+import wBishop from './pieces/wBishop.png';
+import wknight from './pieces/wKnight.png';
+import wKing from './pieces/wKing.png';
+import wRook from './pieces/wRook.png';
+import wQueen from './pieces/wQueen.png';
+
+import bPawn from './pieces/bPawn.png';
+import bBishop from './pieces/bBishop.png';
+import bknight from './pieces/bKnight.png';
+import bKing from './pieces/bKing.png';
+import bRook from './pieces/bRook.png';
+import bQueen from './pieces/bQueen.png';
+
+
+
 
 
 /*
@@ -22,26 +36,14 @@ function arrayUnique(array) {
 
     return a;
 }
-
 //function to display the light square
 function Square(props) {
 	return (
-	<button className="squarel" onClick={props.onClick}>
-		{props.index}
-		{props.value}
-	</button>
+		<button className= {props.className} onClick={props.onClick}>
+			<img className = "piece" src = {props.value} alt = {props.value} />
+		</button>
 	);
 }
-//function to display the dark square
-function Squared(props) {
-	return (
-	<button className="squared" background ="#fff"onClick={props.onClick}>
-		{props.index}
-		{props.value}
-	</button>
-	);
-}
-
 
 // checks to see if compareValue is a different color to pieceColor
 function isOppositeColor(compareValue,pieceColor){
@@ -66,13 +68,18 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	x += xChange;
 	y += yChange;
 	var cord = x + y*8;
+	// check bounds of the x and y cordinate
 	if(x >= 0 && x <=7){
 		if(y >= 0 && y <=7){
+			
+			// if the value of the square is zero recursively call checkline
 			if(squares[cord] === 0){
 				if(CheckLine(x,y,xChange,yChange,color,squares) === null){
 					return [cord]
 				}
 				return [cord].concat(CheckLine(x,y,xChange,yChange,color,squares))
+
+			// chech to see if the last square is the opposite color
 			}else{
 				if(isOppositeColor(squares[cord],color)){
 					return [cord]
@@ -83,9 +90,13 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	return -1;
 }
 
+
+/*
+	CalculateCheck: int[], int[], bool
+	loop through attacks and see if the attack causes a check
+*/
 function CalculateCheck(squares, attacks, color){
 	for(var i in attacks){
-		
 		if(squares[attacks[i]] === 6 && color){			// if the selected color is white and the white king is attacked
 			return true; 
 		}else if(squares[attacks[i]] === 16 && !color){ // if the selected color is black and the black king is attacked
@@ -377,9 +388,9 @@ function CalculateKingMoves(x,y,color,squares){
 
 		}
 	}
-	console.log(moveArray);
 	return moveArray;
 }
+
 /*
 	CalculateAllAttacksForOppositeColor (int[], bool)
 	returns all of the attacked squares on the board from the opposing color
@@ -454,7 +465,6 @@ function CalculateAllAttacksForOppositeColor(squares,CheckColor){
 	value is the value of i
 	squares is the board 
 */
-
 function CalculateMoves(i,value,squares){
 
 	//calculate board position of the piece
@@ -502,14 +512,11 @@ function CalculateMoves(i,value,squares){
 	var move;
 	var squaresCopy;
 	var moveArrayValidated = [];
-	console.log("before",moveArray);
-
 	for(var m in moveArray){						// loops through the moveArray
 		move = moveArray[m];						// gets a copy of the move
 		squaresCopy = squares.slice();				// creates a copy of squares
 		squaresCopy[move] = value;					// makes the move 
 		squaresCopy[i] = 0;
-		console.log(m, moveArrayValidated, squaresCopy[move], CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color));
 		// tests to see if the move is made, that it doesn't put the player in check
 		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color)){
 			moveArrayValidated.push(move);			// if the move would put the player in check 
@@ -517,8 +524,6 @@ function CalculateMoves(i,value,squares){
 		}
 
 	}
-	console.log("after",moveArrayValidated);
-
 	return moveArrayValidated;
 } 
 
@@ -534,36 +539,89 @@ class Board extends React.Component {
 			//initial game vars
 			WhiteTurn: true,
 			CordClick: true,
-			clickPiece: null
+			clickPiece: null,
+			checkMate: false
+
 		};
 	}
 
 	//Main Handler for clicks
 	handleClick(i) {
 		const squares = this.state.squares.slice();
+
+		// calculates which turn it is supposed to be 
+		// then verifies that the clicked piece can be moved
+		var color = true;
+		var value = squares[i];
+		if(value === 0){
+			value = squares[this.state.clickPiece]
+		}
+		if(value > 10){
+			color = false;
+		}
+
+
+		// if a king is check mated the board cant be changed
+		if(this.state.checkMate)
+			return;
+		
+
+
 		if(this.state.CordClick){
-			if (squares[i] === 0) return;
+			// if the user clicks an empty square or a square that isn't theirs
+			if (squares[i] === 0 || color !== this.state.WhiteTurn) 
+				return;
 			this.moveArray = CalculateMoves(i,squares[i],squares);
 			this.setState({clickPiece: i});
+			console.log("Moves", this.moveArray);
+
 		}else{
-			console.log(i);
-			for(const l in this.moveArray){
-				if(i === this.moveArray[l]){
-					console.log("moved");
-					squares[i] = squares[this.state.clickPiece];
-					squares[this.state.clickPiece] = 0;
+			console.log("Clicked", i);
+			value = squares[this.state.clickPiece];
+
+			for(const l in this.moveArray){											// loops through the move array
+				if(i === this.moveArray[l]){										// if the clicked square is in the move array 
+
+					//auto queen handling, 
+					if((value === 1 || value === 11) && (i-8 < 0 || i + 8 > 63 )){  // checks to see if a pawn has gotten to the back rank
+						squares[i] = squares[this.state.clickPiece] + 4;
+					}else{															// otherwise move normally
+						squares[i] = squares[this.state.clickPiece];
+					}
+
+					squares[this.state.clickPiece] = 0;								// set the previous square to empty
+					
+					this.setState({	
+						WhiteTurn: !this.state.WhiteTurn							// invert the turn
+					})
+				}
+			}
+		}
+		
+		// checkmate handling
+		var checkmate = true;
+		for(var s in squares){												// loop through every square
+			if(isOppositeColor(squares[s],color)){							// if the square is an opposite color to the one playing
+				if((CalculateMoves(s,squares[s],squares).length !== 0)){	// check to see if any moves can be made 
+					checkmate = false;										// if there are moves, then the user isn't checkmated
 				}
 			}
 		}
 
-		this.setState({
-			squares: squares,
-			WhiteTurn: !this.state.WhiteTurn,
-			CordClick: !this.state.CordClick,
+		this.setState({														// sets the game state
+			squares: squares,												// copys the new board into state
+			CordClick: !this.state.CordClick,								// inverts click type
+			checkMate: checkmate,											// copys checkmate to state
 
 		});
 	}
 
+	//reloads the page, reseting the board
+	resetBoard(){
+		window.location.reload()
+	}
+
+	// renders the pieces based on their value
 	renderPiece(i){
 		//pawn = 1
 		//knight = 2
@@ -572,150 +630,145 @@ class Board extends React.Component {
 		//queen = 5
 		//king = 6
 
+		//below 10 = white
+		//above 10 = black
+
 		switch(this.state.squares[i]){
 			case(1):
-				return "Wp";
+				return wPawn;
 			case(2):
-				return "Wk";
+				return wknight;
 			case(3):
-				return "Wb";
+				return wBishop;
 			case(4):
-				return "Wr";
+				return wRook;
 			case(5):
-				return "Wq";
+				return wQueen;
 			case(6):
-				return "Wx";
+				return wKing;
 			case(11):
-				return "Bp";
+				return bPawn;
 			case(12):
-				return "Bk";
+				return bknight;
 			case(13):
-				return "Bb";
+				return bBishop;
 			case(14):
-				return "Br";
+				return bRook;
 			case(15):
-				return "Bq";
+				return bQueen;
 			case(16):
-				return "Bx";
+				return bKing;
 			default:
 				return;
 		}
 	}
-
 	//Render a light square
 	//displayes the corresponding piece
-	renderSquare(i) {
+	renderSquare(i,className) {
 		return (
+		
 			<Square
+			className = {className}
 			value={this.renderPiece(i)}
 			index={i} 
 			onClick={() => this.handleClick(i)}
 			/>
+
 		);
 	}
-	renderSquared(i){
-		return (
-			<Squared
-			value={this.renderPiece(i)}
-			index={i} 
-			onClick={() => this.handleClick(i)}
-			/>
-		);
-
-	}
-
-
-
 	render() {
 		//Status strings that are displayed above the board
-		let status = 'To Move: ' + (this.state.WhiteTurn ? 'White' : 'Black');
-		let instruction = 'Instruction: ' + (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
+		let status = (this.state.WhiteTurn ? 'White' : 'Black');
+		var instruction = (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
+		if(this.state.checkMate) instruction = "Check Mate";
+		
 		//renderSquare(i) renders a light square
-		//renderSquared(i) renders a dard square
+		//renderSquare(i) renders a dard square
 		return (
 			<div>
 				<div className="status">{status}</div>
 				<div className="instruction">{instruction}</div>
 				<div className="board-row">
-					{this.renderSquare(0)}
-					{this.renderSquared(1)}
-					{this.renderSquare(2)}
-					{this.renderSquared(3)}
-					{this.renderSquare(4)}
-					{this.renderSquared(5)}
-					{this.renderSquare(6)}
-					{this.renderSquared(7)}
+					{this.renderSquare(0,"SquareLight")}
+					{this.renderSquare(1,"SquareDark")}
+					{this.renderSquare(2,"SquareLight")}
+					{this.renderSquare(3,"SquareDark")}
+					{this.renderSquare(4,"SquareLight")}
+					{this.renderSquare(5,"SquareDark")}
+					{this.renderSquare(6,"SquareLight")}
+					{this.renderSquare(7,"SquareDark")}
 				</div>
 				<div className="board-row">
-					{this.renderSquared(0+8)}
-					{this.renderSquare(1+8)}
-					{this.renderSquared(2+8)}
-					{this.renderSquare(3+8)}
-					{this.renderSquared(4+8)}
-					{this.renderSquare(5+8)}
-					{this.renderSquared(6+8)}
-					{this.renderSquare(7+8)}
+					{this.renderSquare(0+8,"SquareDark")}
+					{this.renderSquare(1+8,"SquareLight")}
+					{this.renderSquare(2+8,"SquareDark")}
+					{this.renderSquare(3+8,"SquareLight")}
+					{this.renderSquare(4+8,"SquareDark")}
+					{this.renderSquare(5+8,"SquareLight")}
+					{this.renderSquare(6+8,"SquareDark")}
+					{this.renderSquare(7+8,"SquareLight")}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+16)}
-					{this.renderSquared(1+16)}
-					{this.renderSquare(2+16)}
-					{this.renderSquared(3+16)}
-					{this.renderSquare(4+16)}
-					{this.renderSquared(5+16)}
-					{this.renderSquare(6+16)}
-					{this.renderSquared(7+16)}
+					{this.renderSquare(0+16,"SquareLight")}
+					{this.renderSquare(1+16,"SquareDark")}
+					{this.renderSquare(2+16,"SquareLight")}
+					{this.renderSquare(3+16,"SquareDark")}
+					{this.renderSquare(4+16,"SquareLight")}
+					{this.renderSquare(5+16,"SquareDark")}
+					{this.renderSquare(6+16,"SquareLight")}
+					{this.renderSquare(7+16,"SquareDark")}
 				</div>
 				<div className="board-row">
-					{this.renderSquared(0+24)}
-					{this.renderSquare(1+24)}
-					{this.renderSquared(2+24)}
-					{this.renderSquare(3+24)}
-					{this.renderSquared(4+24)}
-					{this.renderSquare(5+24)}
-					{this.renderSquared(6+24)}
-					{this.renderSquare(7+24)}
+					{this.renderSquare(0+24,"SquareDark")}
+					{this.renderSquare(1+24,"SquareLight")}
+					{this.renderSquare(2+24,"SquareDark")}
+					{this.renderSquare(3+24,"SquareLight")}
+					{this.renderSquare(4+24,"SquareDark")}
+					{this.renderSquare(5+24,"SquareLight")}
+					{this.renderSquare(6+24,"SquareDark")}
+					{this.renderSquare(7+24,"SquareLight")}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+32)}
-					{this.renderSquared(1+32)}
-					{this.renderSquare(2+32)}
-					{this.renderSquared(3+32)}
-					{this.renderSquare(4+32)}
-					{this.renderSquared(5+32)}
-					{this.renderSquare(6+32)}
-					{this.renderSquared(7+32)}
+					{this.renderSquare(0+32,"SquareLight")}
+					{this.renderSquare(1+32,"SquareDark")}
+					{this.renderSquare(2+32,"SquareLight")}
+					{this.renderSquare(3+32,"SquareDark")}
+					{this.renderSquare(4+32,"SquareLight")}
+					{this.renderSquare(5+32,"SquareDark")}
+					{this.renderSquare(6+32,"SquareLight")}
+					{this.renderSquare(7+32,"SquareDark")}
 				</div>
 				<div className="board-row">
-					{this.renderSquared(0+40)}
-					{this.renderSquare(1+40)}
-					{this.renderSquared(2+40)}
-					{this.renderSquare(3+40)}
-					{this.renderSquared(4+40)}
-					{this.renderSquare(5+40)}
-					{this.renderSquared(6+40)}
-					{this.renderSquare(7+40)}
+					{this.renderSquare(0+40,"SquareDark")}
+					{this.renderSquare(1+40,"SquareLight")}
+					{this.renderSquare(2+40,"SquareDark")}
+					{this.renderSquare(3+40,"SquareLight")}
+					{this.renderSquare(4+40,"SquareDark")}
+					{this.renderSquare(5+40,"SquareLight")}
+					{this.renderSquare(6+40,"SquareDark")}
+					{this.renderSquare(7+40,"SquareLight")}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+48)}
-					{this.renderSquared(1+48)}
-					{this.renderSquare(2+48)}
-					{this.renderSquared(3+48)}
-					{this.renderSquare(4+48)}
-					{this.renderSquared(5+48)}
-					{this.renderSquare(6+48)}
-					{this.renderSquared(7+48)}
+					{this.renderSquare(0+48,"SquareLight")}
+					{this.renderSquare(1+48,"SquareDark")}
+					{this.renderSquare(2+48,"SquareLight")}
+					{this.renderSquare(3+48,"SquareDark")}
+					{this.renderSquare(4+48,"SquareLight")}
+					{this.renderSquare(5+48,"SquareDark")}
+					{this.renderSquare(6+48,"SquareLight")}
+					{this.renderSquare(7+48,"SquareDark")}
 				</div>
 				<div className="board-row">
-					{this.renderSquared(0+56)}
-					{this.renderSquare(1+56)}
-					{this.renderSquared(2+56)}
-					{this.renderSquare(3+56)}
-					{this.renderSquared(4+56)}
-					{this.renderSquare(5+56)}
-					{this.renderSquared(6+56)}
-					{this.renderSquare(7+56)}
+					{this.renderSquare(0+56,"SquareDark")}
+					{this.renderSquare(1+56,"SquareLight")}
+					{this.renderSquare(2+56,"SquareDark")}
+					{this.renderSquare(3+56,"SquareLight")}
+					{this.renderSquare(4+56,"SquareDark")}
+					{this.renderSquare(5+56,"SquareLight")}
+					{this.renderSquare(6+56,"SquareDark")}
+					{this.renderSquare(7+56,"SquareLight")}
 				</div>
+				<div className="reset" onClick = {() => this.resetBoard()}> {"Reset Board"} </div>
 			</div>
 		);
 	}
