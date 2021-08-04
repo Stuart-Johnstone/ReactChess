@@ -17,20 +17,25 @@ ol,ul{
     margin-bottom: 10px;
     font-size: 40px;
     font-family: "Trebuchet MS";
+    text-align: center;
+
 }
 .instruction{
     margin-bottom: 10px;
     font-size: 40px;
     font-family: "Trebuchet MS";
+    text-align: center;
+
 }
 .reset{
     margin-bottom: 10px;
     font-size: 40px;
     font-family: "Trebuchet MS";
-    background-color: coral;
+    background-color: rgb(255, 136, 57);
+    text-align: center;
 }
 
-.squarel{
+.SquareLight{
     background: rgb(177, 227, 247);
     border: 0px solid rgb(0, 0, 0);
     float: left;
@@ -45,7 +50,7 @@ ol,ul{
     width: 64px
 }
 
-.squared{
+.SquareDark{
     background: rgb(5, 114, 187);
     border: 0px solid rgb(0, 0, 0);
     float: left;
@@ -61,6 +66,13 @@ ol,ul{
 }
 .square:focus{
     outline:none
+}
+
+
+.Wp{
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 733px 0px;
 }
 
 .kbd-navigation .square:focus{
