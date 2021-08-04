@@ -36,6 +36,7 @@ ol,ul{
 }
 
 .SquareLight{
+    position: relative;
     background: rgb(177, 227, 247);
     border: 0px solid rgb(0, 0, 0);
     float: left;
@@ -51,6 +52,7 @@ ol,ul{
 }
 
 .SquareDark{
+    position: relative;
     background: rgb(5, 114, 187);
     border: 0px solid rgb(0, 0, 0);
     float: left;
@@ -70,10 +72,88 @@ ol,ul{
 
 
 .Wp{
+    width: 64px;
+    height: 64px;
+    clip: rect(0,3px,0,0)
+}
+
+.Bp{
     height: 161px;
     width:  146px;
-    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 733px 0px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 161px;
 }
+.Wq{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Wx{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Wk{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Wb{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Wr{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Bq{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Bx{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Bk{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Bb{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+.Br{
+    position: absolute;
+    height: 161px;
+    width:  146px;
+    background-image: url("https://www.pinclipart.com/picdir/middle/60-602740_file-pieces-sprite-wikimedia-chess-pieces-png-clipart.png") 
+    733px 0px;
+}
+
 
 .kbd-navigation .square:focus{
     background: #ddd;

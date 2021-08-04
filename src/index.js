@@ -2,6 +2,23 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+import wPawn from './pieces/wPawn.png';
+import wBishop from './pieces/wBishop.png';
+import wknight from './pieces/wKnight.png';
+import wKing from './pieces/wKing.png';
+import wRook from './pieces/wRook.png';
+import wQueen from './pieces/wQueen.png';
+
+import bPawn from './pieces/bPawn.png';
+import bBishop from './pieces/bBishop.png';
+import bknight from './pieces/bKnight.png';
+import bKing from './pieces/bKing.png';
+import bRook from './pieces/bRook.png';
+import bQueen from './pieces/bQueen.png';
+
+
+
+
 
 /*
 	This function removes dublicates from an array
@@ -23,8 +40,7 @@ function arrayUnique(array) {
 function Square(props) {
 	return (
 		<button className= {props.className} onClick={props.onClick}>
-			{props.index}
-			{props.value}
+			<img className = "piece" src = {props.value} alt = {props.value} />
 		</button>
 	);
 }
@@ -600,22 +616,9 @@ class Board extends React.Component {
 		});
 	}
 
-	//resets the board to default
+	//reloads the page, reseting the board
 	resetBoard(){
-		this.moveArray = [];
-		this.setState ({
-			//Initial state of the board
-			squares: [14,12,13,15,16,13,12,14,11,11,11,11,11,11,11,11].concat(Array(32).fill(0).concat([1,1,1,1,1,1,1,1,4,2,3,5,6,3,2,4])),
-			//initial game vars
-			WhiteTurn: true,
-			CordClick: true,
-			clickPiece: null,
-			checkMate: false
-
-		});
-		//cycles two clicks to force the board to update
-		this.handleClick(null);
-		this.handleClick(null);
+		window.location.reload()
 	}
 
 	// renders the pieces based on their value
@@ -632,29 +635,29 @@ class Board extends React.Component {
 
 		switch(this.state.squares[i]){
 			case(1):
-				return "Wp";
+				return wPawn;
 			case(2):
-				return "Wk";
+				return wknight;
 			case(3):
-				return "Wb";
+				return wBishop;
 			case(4):
-				return "Wr";
+				return wRook;
 			case(5):
-				return "Wq";
+				return wQueen;
 			case(6):
-				return "Wx";
+				return wKing;
 			case(11):
-				return "Bp";
+				return bPawn;
 			case(12):
-				return "Bk";
+				return bknight;
 			case(13):
-				return "Bb";
+				return bBishop;
 			case(14):
-				return "Br";
+				return bRook;
 			case(15):
-				return "Bq";
+				return bQueen;
 			case(16):
-				return "Bx";
+				return bKing;
 			default:
 				return;
 		}
