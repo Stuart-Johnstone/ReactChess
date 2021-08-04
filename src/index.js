@@ -40,6 +40,7 @@ function arrayUnique(array) {
 function Square(props) {
 	return (
 		<button className= {props.className} onClick={props.onClick}>
+			{props.index}
 			<img className = "piece" src = {props.value} alt = {props.value} />
 		</button>
 	);
@@ -491,7 +492,7 @@ function CalculateMoves(i,value,squares){
 		moveArray = CalculatePawnMoves(x,y,color,i,value,squares);
 	}
 	else if(value === 2 || value === 12){ // knight
-		moveArray = CalculateKnightMoves(x,y,color,i,value,squares);
+		moveArray = CalculateKnightMoves(x,y,color,squares);
 	}
 	else if(value === 3 || value === 13){ // bishop
 		moveArray = CalculateBishopMoves(x,y,color,squares);
@@ -518,7 +519,7 @@ function CalculateMoves(i,value,squares){
 		squaresCopy[move] = value;					// makes the move 
 		squaresCopy[i] = 0;
 		// tests to see if the move is made, that it doesn't put the player in check
-		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color)){
+		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color) && move >= 0){
 			moveArrayValidated.push(move);			// if the move would put the player in check 
 													// then remove it from the list
 		}
@@ -601,8 +602,8 @@ class Board extends React.Component {
 		// checkmate handling
 		var checkmate = true;
 		for(var s in squares){												// loop through every square
-			if(isOppositeColor(squares[s],color)){							// if the square is an opposite color to the one playing
-				if((CalculateMoves(s,squares[s],squares).length !== 0)){	// check to see if any moves can be made 
+			if(isOppositeColor(squares[s],this.state.WhiteTurn)){							// if the square is an opposite color to the one playing
+				if(CalculateMoves(s,squares[s],squares).length !== 0){		// check to see if any moves can be made 
 					checkmate = false;										// if there are moves, then the user isn't checkmated
 				}
 			}
