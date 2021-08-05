@@ -40,8 +40,21 @@ function arrayUnique(array) {
 function Square(props) {
 	return (
 		<button className= {props.className} onClick={props.onClick}>
-			{props.index}
-			<img className = "piece" src = {props.value} alt = {props.value} />
+			{/* {props.index} */}
+			<img className = "piece" src = {props.value} alt = "" />
+		</button>
+	);
+}
+
+//function to display the light square
+function SquareDot(props) {
+	return (
+		<button className= {props.className} onClick={props.onClick}>
+			{/* {props.index} */}
+			<div className="dot">
+				<img className = "piece" src = {props.value} alt = {props.value} />
+			</div>
+			
 		</button>
 	);
 }
@@ -665,7 +678,21 @@ class Board extends React.Component {
 	}
 	//Render a light square
 	//displayes the corresponding piece
-	renderSquare(i,className) {
+	renderSquare(i,className, attacks) {
+		for(var a in attacks){
+			console.log(i, attacks[a] === this.state.squares[i]);
+
+			if(attacks[a] === i && !this.state.CordClick){
+				return(
+					<SquareDot
+						className = {className}
+						value={this.renderPiece(i)}
+						index={i} 
+						onClick={() => this.handleClick(i)}
+					/>
+				);
+			}
+		}
 		return (
 		
 			<Square
@@ -683,91 +710,89 @@ class Board extends React.Component {
 		var instruction = (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
 		if(this.state.checkMate) instruction = "Check Mate";
 		
-		//renderSquare(i) renders a light square
-		//renderSquare(i) renders a dard square
 		return (
 			<div>
 				<div className="status">{status}</div>
 				<div className="instruction">{instruction}</div>
 				<div className="board-row">
-					{this.renderSquare(0,"SquareLight")}
-					{this.renderSquare(1,"SquareDark")}
-					{this.renderSquare(2,"SquareLight")}
-					{this.renderSquare(3,"SquareDark")}
-					{this.renderSquare(4,"SquareLight")}
-					{this.renderSquare(5,"SquareDark")}
-					{this.renderSquare(6,"SquareLight")}
-					{this.renderSquare(7,"SquareDark")}
+					{this.renderSquare(0,"SquareLight",this.moveArray)}
+					{this.renderSquare(1,"SquareDark",this.moveArray)}
+					{this.renderSquare(2,"SquareLight",this.moveArray)}
+					{this.renderSquare(3,"SquareDark",this.moveArray)}
+					{this.renderSquare(4,"SquareLight",this.moveArray)}
+					{this.renderSquare(5,"SquareDark",this.moveArray)}
+					{this.renderSquare(6,"SquareLight",this.moveArray)}
+					{this.renderSquare(7,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+8,"SquareDark")}
-					{this.renderSquare(1+8,"SquareLight")}
-					{this.renderSquare(2+8,"SquareDark")}
-					{this.renderSquare(3+8,"SquareLight")}
-					{this.renderSquare(4+8,"SquareDark")}
-					{this.renderSquare(5+8,"SquareLight")}
-					{this.renderSquare(6+8,"SquareDark")}
-					{this.renderSquare(7+8,"SquareLight")}
+					{this.renderSquare(0+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+8,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+16,"SquareLight")}
-					{this.renderSquare(1+16,"SquareDark")}
-					{this.renderSquare(2+16,"SquareLight")}
-					{this.renderSquare(3+16,"SquareDark")}
-					{this.renderSquare(4+16,"SquareLight")}
-					{this.renderSquare(5+16,"SquareDark")}
-					{this.renderSquare(6+16,"SquareLight")}
-					{this.renderSquare(7+16,"SquareDark")}
+					{this.renderSquare(0+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+16,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+24,"SquareDark")}
-					{this.renderSquare(1+24,"SquareLight")}
-					{this.renderSquare(2+24,"SquareDark")}
-					{this.renderSquare(3+24,"SquareLight")}
-					{this.renderSquare(4+24,"SquareDark")}
-					{this.renderSquare(5+24,"SquareLight")}
-					{this.renderSquare(6+24,"SquareDark")}
-					{this.renderSquare(7+24,"SquareLight")}
+					{this.renderSquare(0+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+24,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+32,"SquareLight")}
-					{this.renderSquare(1+32,"SquareDark")}
-					{this.renderSquare(2+32,"SquareLight")}
-					{this.renderSquare(3+32,"SquareDark")}
-					{this.renderSquare(4+32,"SquareLight")}
-					{this.renderSquare(5+32,"SquareDark")}
-					{this.renderSquare(6+32,"SquareLight")}
-					{this.renderSquare(7+32,"SquareDark")}
+					{this.renderSquare(0+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+32,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+40,"SquareDark")}
-					{this.renderSquare(1+40,"SquareLight")}
-					{this.renderSquare(2+40,"SquareDark")}
-					{this.renderSquare(3+40,"SquareLight")}
-					{this.renderSquare(4+40,"SquareDark")}
-					{this.renderSquare(5+40,"SquareLight")}
-					{this.renderSquare(6+40,"SquareDark")}
-					{this.renderSquare(7+40,"SquareLight")}
+					{this.renderSquare(0+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+40,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+48,"SquareLight")}
-					{this.renderSquare(1+48,"SquareDark")}
-					{this.renderSquare(2+48,"SquareLight")}
-					{this.renderSquare(3+48,"SquareDark")}
-					{this.renderSquare(4+48,"SquareLight")}
-					{this.renderSquare(5+48,"SquareDark")}
-					{this.renderSquare(6+48,"SquareLight")}
-					{this.renderSquare(7+48,"SquareDark")}
+					{this.renderSquare(0+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+48,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+56,"SquareDark")}
-					{this.renderSquare(1+56,"SquareLight")}
-					{this.renderSquare(2+56,"SquareDark")}
-					{this.renderSquare(3+56,"SquareLight")}
-					{this.renderSquare(4+56,"SquareDark")}
-					{this.renderSquare(5+56,"SquareLight")}
-					{this.renderSquare(6+56,"SquareDark")}
-					{this.renderSquare(7+56,"SquareLight")}
+					{this.renderSquare(0+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+56,"SquareLight",this.moveArray)}
 				</div>
 				<div className="reset" onClick = {() => this.resetBoard()}> {"Reset Board"} </div>
 			</div>
