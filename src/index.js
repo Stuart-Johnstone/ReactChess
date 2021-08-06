@@ -36,12 +36,25 @@ function arrayUnique(array) {
 
     return a;
 }
-//function to display the light square
+//function to display a square
 function Square(props) {
 	return (
 		<button className= {props.className} onClick={props.onClick}>
-			{props.index}
-			<img className = "piece" src = {props.value} alt = {props.value} />
+			{/* {props.index} */}
+			<img className = "piece" src = {props.value} alt = "" />
+		</button>
+	);
+}
+
+//function to display a square with an attack dot
+function SquareDot(props) {
+	return (
+		<button className= {props.className} onClick={props.onClick}>
+			{/* {props.index} */}
+			<div className="dot">
+				<img className = "piece" src = {props.value} alt = {props.value} />
+			</div>
+			
 		</button>
 	);
 }
@@ -90,7 +103,6 @@ function CheckLine(x,y,xChange,yChange,color,squares){
 	}
 	return -1;
 }
-
 
 /*
 	CalculateCheck: int[], int[], bool
@@ -392,6 +404,26 @@ function CalculateKingMoves(x,y,color,squares){
 	return moveArray;
 }
 
+function CalculateCastle(king,castleArray,squares){
+	var moveArray = [];
+	if(king){
+		if(squares[57]+squares[58]+squares[59] === 0 && (castleArray[0] && squares[56] === 4)){
+			moveArray.push(58);
+		}
+		if(squares[61]+squares[62] === 0 && (castleArray[1] && squares[63] === 4)){
+			moveArray.push(62);
+		}
+	}else{
+		if(squares[1]+squares[2]+squares[3] === 0 && (castleArray[0] && squares[0] === 14)){
+			moveArray.push(2);
+		}
+		if(squares[5]+squares[6] === 0 && (castleArray[1] && squares[7] === 14)){
+			moveArray.push(6);
+		}
+	}
+	return moveArray;
+	
+}
 /*
 	CalculateAllAttacksForOppositeColor (int[], bool)
 	returns all of the attacked squares on the board from the opposing color
@@ -466,7 +498,7 @@ function CalculateAllAttacksForOppositeColor(squares,CheckColor){
 	value is the value of i
 	squares is the board 
 */
-function CalculateMoves(i,value,squares){
+function CalculateMoves(i,value,squares,whiteCastle,blackCastle){
 
 	//calculate board position of the piece
 	var x = i%8;
@@ -505,6 +537,13 @@ function CalculateMoves(i,value,squares){
 	}
 	else if(value === 6 || value === 16){
 		moveArray = CalculateKingMoves(x,y,color,squares);
+
+		if(squares[i] === 6){
+			moveArray = moveArray.concat(CalculateCastle(true,whiteCastle,squares));
+		}
+		else if(squares[i] === 16){
+			moveArray = moveArray.concat(CalculateCastle(false,blackCastle,squares));
+		}
 	}
 
 	moveArray = arrayUnique(moveArray);
@@ -528,12 +567,15 @@ function CalculateMoves(i,value,squares){
 	return moveArrayValidated;
 } 
 
+
 //The main board class
 class Board extends React.Component {
 	//Constructor for the Board component
 	constructor(props) {
 		super(props);
 		this.moveArray = [];
+		this.whiteCastle = [true,true];
+		this.blackCastle = [true,true];
 		this.state = {
 			//Initial state of the board
 			squares: [14,12,13,15,16,13,12,14,11,11,11,11,11,11,11,11].concat(Array(32).fill(0).concat([1,1,1,1,1,1,1,1,4,2,3,5,6,3,2,4])),
@@ -572,7 +614,11 @@ class Board extends React.Component {
 			// if the user clicks an empty square or a square that isn't theirs
 			if (squares[i] === 0 || color !== this.state.WhiteTurn) 
 				return;
-			this.moveArray = CalculateMoves(i,squares[i],squares);
+			this.moveArray = CalculateMoves(i,squares[i],squares,this.whiteCastle,this.blackCastle);
+
+
+
+
 			this.setState({clickPiece: i});
 			console.log("Moves", this.moveArray);
 
@@ -583,11 +629,34 @@ class Board extends React.Component {
 			for(const l in this.moveArray){											// loops through the move array
 				if(i === this.moveArray[l]){										// if the clicked square is in the move array 
 
-					//auto queen handling, 
+					// auto queen handling, 
 					if((value === 1 || value === 11) && (i-8 < 0 || i + 8 > 63 )){  // checks to see if a pawn has gotten to the back rank
 						squares[i] = squares[this.state.clickPiece] + 4;
 					}else{															// otherwise move normally
 						squares[i] = squares[this.state.clickPiece];
+					}
+
+					// castleing handling
+					if(value === 6 || value === 16){
+						if(this.state.clickPiece - i === 2){						// the king is trying to long castle
+							squares[i+1] = squares[i-2];							// move the rook
+							squares[i-2] = 0;										// set the rooks position to 0
+						}else if(this.state.clickPiece - i === -2){					// the king is trying to short castle
+							squares[i-1] = squares[i+1];							// move the rook
+							squares[i+1] = 0;										// set the rooks position to 0
+						}
+						if(value === 6) this.whiteCastle = [false,false];			// sets castling to false when a king is moved
+						if(value === 16) this.blackCastle = [false,false];
+					}
+
+					// rook movement handling for castling
+					if(value === 4 || value === 14){
+						switch(this.state.clickPiece){								// sets the respective castling direction to false
+							case(0):  this.blackCastle[0] = false;					// 0 === long castle  (left)
+							case(7):  this.blackCastle[1] = false;					// 1 === short castle (right)
+							case(56): this.whiteCastle[0] = false;
+							case(63): this.whiteCastle[1] = false;
+						}
 					}
 
 					squares[this.state.clickPiece] = 0;								// set the previous square to empty
@@ -603,7 +672,7 @@ class Board extends React.Component {
 		var checkmate = true;
 		for(var s in squares){												// loop through every square
 			if(isOppositeColor(squares[s],this.state.WhiteTurn)){							// if the square is an opposite color to the one playing
-				if(CalculateMoves(s,squares[s],squares).length !== 0){		// check to see if any moves can be made 
+				if(CalculateMoves(s,squares[s],squares,this.whiteCastle,this.black).length !== 0){		// check to see if any moves can be made 
 					checkmate = false;										// if there are moves, then the user isn't checkmated
 				}
 			}
@@ -665,16 +734,29 @@ class Board extends React.Component {
 	}
 	//Render a light square
 	//displayes the corresponding piece
-	renderSquare(i,className) {
+	renderSquare(i,className, attacks) {
+		// move dot handling
+	for(var a in attacks){										// loop throught the avaliable
+			if(attacks[a] === i && !this.state.CordClick){		// if the square can be moved to and the state is correct	
+				return(
+					<SquareDot
+						className = {className}
+						value={this.renderPiece(i)}
+						index={i} 
+						onClick={() => this.handleClick(i)}
+					/>
+				);
+			}
+		}
+
+		// no move dot
 		return (
-		
 			<Square
 			className = {className}
 			value={this.renderPiece(i)}
 			index={i} 
 			onClick={() => this.handleClick(i)}
 			/>
-
 		);
 	}
 	render() {
@@ -683,91 +765,89 @@ class Board extends React.Component {
 		var instruction = (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
 		if(this.state.checkMate) instruction = "Check Mate";
 		
-		//renderSquare(i) renders a light square
-		//renderSquare(i) renders a dard square
 		return (
 			<div>
 				<div className="status">{status}</div>
 				<div className="instruction">{instruction}</div>
 				<div className="board-row">
-					{this.renderSquare(0,"SquareLight")}
-					{this.renderSquare(1,"SquareDark")}
-					{this.renderSquare(2,"SquareLight")}
-					{this.renderSquare(3,"SquareDark")}
-					{this.renderSquare(4,"SquareLight")}
-					{this.renderSquare(5,"SquareDark")}
-					{this.renderSquare(6,"SquareLight")}
-					{this.renderSquare(7,"SquareDark")}
+					{this.renderSquare(0,"SquareLight",this.moveArray)}
+					{this.renderSquare(1,"SquareDark",this.moveArray)}
+					{this.renderSquare(2,"SquareLight",this.moveArray)}
+					{this.renderSquare(3,"SquareDark",this.moveArray)}
+					{this.renderSquare(4,"SquareLight",this.moveArray)}
+					{this.renderSquare(5,"SquareDark",this.moveArray)}
+					{this.renderSquare(6,"SquareLight",this.moveArray)}
+					{this.renderSquare(7,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+8,"SquareDark")}
-					{this.renderSquare(1+8,"SquareLight")}
-					{this.renderSquare(2+8,"SquareDark")}
-					{this.renderSquare(3+8,"SquareLight")}
-					{this.renderSquare(4+8,"SquareDark")}
-					{this.renderSquare(5+8,"SquareLight")}
-					{this.renderSquare(6+8,"SquareDark")}
-					{this.renderSquare(7+8,"SquareLight")}
+					{this.renderSquare(0+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+8,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+8,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+8,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+16,"SquareLight")}
-					{this.renderSquare(1+16,"SquareDark")}
-					{this.renderSquare(2+16,"SquareLight")}
-					{this.renderSquare(3+16,"SquareDark")}
-					{this.renderSquare(4+16,"SquareLight")}
-					{this.renderSquare(5+16,"SquareDark")}
-					{this.renderSquare(6+16,"SquareLight")}
-					{this.renderSquare(7+16,"SquareDark")}
+					{this.renderSquare(0+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+16,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+16,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+16,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+24,"SquareDark")}
-					{this.renderSquare(1+24,"SquareLight")}
-					{this.renderSquare(2+24,"SquareDark")}
-					{this.renderSquare(3+24,"SquareLight")}
-					{this.renderSquare(4+24,"SquareDark")}
-					{this.renderSquare(5+24,"SquareLight")}
-					{this.renderSquare(6+24,"SquareDark")}
-					{this.renderSquare(7+24,"SquareLight")}
+					{this.renderSquare(0+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+24,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+24,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+24,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+32,"SquareLight")}
-					{this.renderSquare(1+32,"SquareDark")}
-					{this.renderSquare(2+32,"SquareLight")}
-					{this.renderSquare(3+32,"SquareDark")}
-					{this.renderSquare(4+32,"SquareLight")}
-					{this.renderSquare(5+32,"SquareDark")}
-					{this.renderSquare(6+32,"SquareLight")}
-					{this.renderSquare(7+32,"SquareDark")}
+					{this.renderSquare(0+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+32,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+32,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+32,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+40,"SquareDark")}
-					{this.renderSquare(1+40,"SquareLight")}
-					{this.renderSquare(2+40,"SquareDark")}
-					{this.renderSquare(3+40,"SquareLight")}
-					{this.renderSquare(4+40,"SquareDark")}
-					{this.renderSquare(5+40,"SquareLight")}
-					{this.renderSquare(6+40,"SquareDark")}
-					{this.renderSquare(7+40,"SquareLight")}
+					{this.renderSquare(0+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+40,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+40,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+40,"SquareLight",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+48,"SquareLight")}
-					{this.renderSquare(1+48,"SquareDark")}
-					{this.renderSquare(2+48,"SquareLight")}
-					{this.renderSquare(3+48,"SquareDark")}
-					{this.renderSquare(4+48,"SquareLight")}
-					{this.renderSquare(5+48,"SquareDark")}
-					{this.renderSquare(6+48,"SquareLight")}
-					{this.renderSquare(7+48,"SquareDark")}
+					{this.renderSquare(0+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(1+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(2+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(3+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(4+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(5+48,"SquareDark",this.moveArray)}
+					{this.renderSquare(6+48,"SquareLight",this.moveArray)}
+					{this.renderSquare(7+48,"SquareDark",this.moveArray)}
 				</div>
 				<div className="board-row">
-					{this.renderSquare(0+56,"SquareDark")}
-					{this.renderSquare(1+56,"SquareLight")}
-					{this.renderSquare(2+56,"SquareDark")}
-					{this.renderSquare(3+56,"SquareLight")}
-					{this.renderSquare(4+56,"SquareDark")}
-					{this.renderSquare(5+56,"SquareLight")}
-					{this.renderSquare(6+56,"SquareDark")}
-					{this.renderSquare(7+56,"SquareLight")}
+					{this.renderSquare(0+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(1+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(2+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(3+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(4+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(5+56,"SquareLight",this.moveArray)}
+					{this.renderSquare(6+56,"SquareDark",this.moveArray)}
+					{this.renderSquare(7+56,"SquareLight",this.moveArray)}
 				</div>
 				<div className="reset" onClick = {() => this.resetBoard()}> {"Reset Board"} </div>
 			</div>

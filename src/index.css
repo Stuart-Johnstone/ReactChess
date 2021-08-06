@@ -47,7 +47,7 @@ ol,ul{
     margin-top: 0px;
     padding: 0;
     text-align: left;
-    width: 64px
+    width: 64px;
 }
 
 .SquareDark{
@@ -63,6 +63,8 @@ ol,ul{
     padding: 0;
     text-align: left;
     width: 64px
+
+    
 }
 .square:focus{
     outline:none
@@ -70,9 +72,18 @@ ol,ul{
 
 
 .piece{
-    width: 64px;
+    outline:none;
+}
+
+.dot {
+
+    margin-left: px;
+    margin-top: 0px;
     height: 64px;
-    clip: rect(0,3px,0,0)
+    width: 64px;    
+    
+    background-color: rgba(94, 169, 182, 0.555);
+    border-radius: 100%;
 }
 
 .kbd-navigation .square:focus{
@@ -87,10 +98,3 @@ ol,ul{
 .game-info {
     margin-left: 20px;
 }
-
-.pieceimg{
-    width: 40px;
-    height: 40px;
-    overflow: hidden;
-}
-
