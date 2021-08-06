@@ -72,6 +72,7 @@ ol,ul{
 
 
 .piece{
+    outline:none;
 }
 
 .dot {
