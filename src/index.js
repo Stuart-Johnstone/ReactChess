@@ -556,11 +556,14 @@ function CalculateMoves(i,value,squares,whiteCastle,blackCastle){
 		move = moveArray[m];						// gets a copy of the move
 		squaresCopy = squares.slice();				// creates a copy of squares
 		squaresCopy[move] = value;					// makes the move 
-		squaresCopy[i] = 0;
+		squaresCopy[i] = 0;							// sets teh previous square to blank
+
 		// tests to see if the move is made, that it doesn't put the player in check
 		if(!CalculateCheck(squaresCopy,CalculateAllAttacksForOppositeColor(squaresCopy,color),color) && move >= 0){
-			moveArrayValidated.push(move);			// if the move would put the player in check 
-													// then remove it from the list
+			if( !(squares[move] === 17 && value !== 1) && !(squares[move] === 7 && value !== 11 ))
+				moveArrayValidated.push(move);			// if the move would put the player in check 
+														// then remove it from the list
+
 		}
 
 	}
@@ -609,7 +612,7 @@ class Board extends React.Component {
 			return;
 		
 
-
+		// Piece clicked
 		if(this.state.CordClick){
 			// if the user clicks an empty square or a square that isn't theirs
 			if (squares[i] === 0 || color !== this.state.WhiteTurn) 
@@ -622,18 +625,33 @@ class Board extends React.Component {
 			this.setState({clickPiece: i});
 			console.log("Moves", this.moveArray);
 
+		// Move clicked
 		}else{
-			console.log("Clicked", i);
 			value = squares[this.state.clickPiece];
 
 			for(const l in this.moveArray){											// loops through the move array
-				if(i === this.moveArray[l]){										// if the clicked square is in the move array 
-
+				if(i === this.moveArray[l]){
+					// if the clicked square is in the move array 
 					// auto queen handling, 
 					if((value === 1 || value === 11) && (i-8 < 0 || i + 8 > 63 )){  // checks to see if a pawn has gotten to the back rank
 						squares[i] = squares[this.state.clickPiece] + 4;
 					}else{															// otherwise move normally
 						squares[i] = squares[this.state.clickPiece];
+					}
+
+					if(value === 1 && i === this.state.clickPiece - 16){
+						squares[this.state.clickPiece-8] = 7;
+
+					}else if(value === 11 && i === this.state.clickPiece + 16){
+						squares[this.state.clickPiece+8] = 17;
+					}
+
+
+					// Delets the en Passanted pawn
+					if(this.state.squares[i] === 7){								// If the captured piece was a white enpassant
+						squares[i-8] = 0;											// removes pawn
+					}else if(this.state.squares[i]  === 17){						// if the captured piece was a black enpassant
+						squares[i+8] = 0;											// removes pawn
 					}
 
 					// castleing handling
@@ -652,33 +670,45 @@ class Board extends React.Component {
 					// rook movement handling for castling
 					if(value === 4 || value === 14){
 						switch(this.state.clickPiece){								// sets the respective castling direction to false
-							case(0):  this.blackCastle[0] = false;					// 0 === long castle  (left)
-							case(7):  this.blackCastle[1] = false;					// 1 === short castle (right)
-							case(56): this.whiteCastle[0] = false;
-							case(63): this.whiteCastle[1] = false;
+							case(0):  this.blackCastle[0] = false; break;			// 0 === long castle  (left)
+							case(7):  this.blackCastle[1] = false; break;			// 1 === short castle (right)
+							case(56): this.whiteCastle[0] = false; break;
+							case(63): this.whiteCastle[1] = false; break;
+							default:
 						}
 					}
 
+
+
 					squares[this.state.clickPiece] = 0;								// set the previous square to empty
+
 					
 					this.setState({	
 						WhiteTurn: !this.state.WhiteTurn							// invert the turn
 					})
+
+					for(i in squares){														// removes enpassantable tiles based on the current turn
+						value = squares[i];
+						if(color === true && value === 17) squares[i] = 0;					// sets all enpassant tiles to false
+						if(color === false && value === 7) squares[i] = 0;					// sets all enpassant tiles to false
+					}
 				}
 			}
+
+
 		}
 		
 		// checkmate handling
 		var checkmate = true;
-		for(var s in squares){												// loop through every square
-			if(isOppositeColor(squares[s],this.state.WhiteTurn)){							// if the square is an opposite color to the one playing
+		for(var s in squares){																			// loop through every square
+			if(isOppositeColor(squares[s],this.state.WhiteTurn)){										// if the square is an opposite color to the one playing
 				if(CalculateMoves(s,squares[s],squares,this.whiteCastle,this.black).length !== 0){		// check to see if any moves can be made 
 					checkmate = false;										// if there are moves, then the user isn't checkmated
 				}
 			}
 		}
 
-		this.setState({														// sets the game state
+		this.setState({																					// sets the game state
 			squares: squares,												// copys the new board into state
 			CordClick: !this.state.CordClick,								// inverts click type
 			checkMate: checkmate,											// copys checkmate to state
@@ -762,7 +792,7 @@ class Board extends React.Component {
 	render() {
 		//Status strings that are displayed above the board
 		let status = (this.state.WhiteTurn ? 'White' : 'Black');
-		var instruction = (this.state.CordClick ? 'Choose a Piece' : 'Move the Piece');
+		var instruction = (this.state.CordClick ? 'Choose' : 'Move');
 		if(this.state.checkMate) instruction = "Check Mate";
 		
 		return (
