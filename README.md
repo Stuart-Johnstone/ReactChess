@@ -1,4 +1,15 @@
+<<<<<<< Development
+# React Chess
 
+![Alt text](README/main_game.png?raw=true)
+
+ReactChess is a web based fully featured chess game built using javascript and react. It features everything you need to play chess like: Check, Check Mate, Castleing, En Passant, etc.
+
+=======
+
+
+# Getting Started with Create React App
+>>>>>>> main
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
